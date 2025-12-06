@@ -32,6 +32,11 @@ public class Task {
     @Column(nullable= false)
     private LocalDateTime updatedAt;
 
+    // Add the relationship to User
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     //auto set timestamps
     @PrePersist
     protected void onCreate() {
@@ -84,6 +89,14 @@ public class Task {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+     public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
 }
