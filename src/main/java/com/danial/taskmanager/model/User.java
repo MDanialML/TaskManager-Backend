@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -20,6 +21,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
+@Table(name = "users") 
 @Setter
 @Getter
 public class User {
@@ -31,7 +33,7 @@ public class User {
     @NotBlank(message = "Usernamr is required")
     @Size(min = 3, max = 50, message = "Username must be 3-50 characters")
     @Column(nullable = false, unique = true, length = 50)
-    private String userName;
+    private String username;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")

@@ -69,6 +69,11 @@
 			<artifactId>jakarta.validation-api</artifactId>
 			<version>4.0.0-M1</version>
 		</dependency>
+		<dependency>
+    		<groupId>org.hibernate.validator</groupId>
+    		<artifactId>hibernate-validator</artifactId>
+		</dependency>
+
 
 		<!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
 		<dependency>
@@ -82,12 +87,12 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+		
 		<dependency>
     		<groupId>org.postgresql</groupId>
     		<artifactId>postgresql</artifactId>
-    		<version>42.6.0</version>
+    		<scope>runtime</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
