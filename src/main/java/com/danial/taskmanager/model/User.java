@@ -14,6 +14,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -21,7 +22,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "users") 
+@Table(name = "users", uniqueConstraints = {
+    @UniqueConstraint(columnNames = "user_name"),
+    @UniqueConstraint(columnNames = "email")
+})
 @Setter
 @Getter
 public class User {
@@ -32,7 +36,7 @@ public class User {
 
     @NotBlank(message = "Usernamr is required")
     @Size(min = 3, max = 50, message = "Username must be 3-50 characters")
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(name = "user_name", nullable = false, unique = true, length = 50)
     private String username;
 
     @NotBlank(message = "Email is required")
