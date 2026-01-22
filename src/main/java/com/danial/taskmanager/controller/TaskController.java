@@ -1,5 +1,6 @@
 package com.danial.taskmanager.controller;
 
+import java.security.Principal;
 import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -8,49 +9,146 @@ import org.springframework.web.bind.annotation.*;
 import com.danial.taskmanager.model.Task;
 import com.danial.taskmanager.service.TaskService;
 
+/**
+ * Task Controller
+ * Handles HTTP request for task operations
+ * All endpoints require authentication
+ */
+
 @RestController
 @RequestMapping("/api/tasks")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class TaskController {
     
     private final TaskService taskService;
-
+    //constructor injection
     public TaskController(TaskService taskService) {
         this.taskService = taskService;
     }
 
-    // GET /api/tasks - Get all tasks
+    /**
+     * Get all tasks for the authenticated user
+     * GET  /api/tasks
+     */
+
     @GetMapping
-    public ResponseEntity<List<Task>> getAllTasks() {
-        return ResponseEntity.ok(taskService.getAllTasks());
+    public ResponseEntity<List<Task>> getAllTasks(Principal principal)
+     {
+        String username = principal.getName();
+        List<Task> tasks = taskService.getUserTasks(username);
+        return ResponseEntity.ok(tasks);
     }
 
-    // GET /api/tasks/{id} - Get single task
+    /**
+     * Get a specific task by ID
+     * GET /api/tasks/{id}
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getTaskById(@PathVariable Long id) {
-        return ResponseEntity.ok(taskService.getTaskById(id));
+    public ResponseEntity<?> getTaskById(@PathVariable Long id, Principal principal) {
+        try{
+            String username = principal.getName();
+            Task task = taskService.getTaskById(id, username);
+            return ResponseEntity.ok(task);
+        }catch(RuntimeException e){
+            return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(e.getMessage());
+        }
     }
 
-    // POST /api/tasks - Create new task
+    /**
+     * Create a new task
+     * POST /api/tasks
+     */
+
     @PostMapping
-    public ResponseEntity<Task> createTask(@Valid @RequestBody Task task) {
-        Task createdTask = taskService.createTask(task);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdTask);
+    public ResponseEntity<?> createTask(@Valid @RequestBody Task task,Principal principal) {
+        try{
+            String username = principal.getName();
+            Task createdTask = taskService.createTask(task, username);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdTask);
+        }catch(RuntimeException e){
+            return ResponseEntity
+            .badRequest()
+            .body(e.getMessage());
+        }
     }
 
-    // PUT /api/tasks/{id} - Update existing task
+    /**
+     * Update an existing task
+     * PUT /api/tasks/{id}
+     */
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(
+    public ResponseEntity<?> updateTask(
             @PathVariable Long id, 
-            @Valid @RequestBody Task task) {
-        Task updatedTask = taskService.updateTask(id, task);
-        return ResponseEntity.ok(updatedTask);
+            @Valid @RequestBody Task task,
+            Principal principal
+        ) {
+        try{
+            String username = principal.getName();
+            Task updatedTask = taskService.updateTask(id, task, username);
+            return ResponseEntity.ok(updatedTask);
+        }catch(RuntimeException e){
+            return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(e.getMessage());
+        }
     }
 
-    // DELETE /api/tasks/{id} - Delete task
+    /**
+     * Delete a task
+     * DELETE /api/tasks/{id}
+     */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
-        taskService.deleteTask(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteTask(@PathVariable Long id, Principal principal) {
+       try {
+        String username = principal.getName();
+        taskService.deleteTask(id, username);
+        return ResponseEntity.ok("Task deleted successfully");
+       } catch (RuntimeException e) {
+        return ResponseEntity
+        .status(HttpStatus.NOT_FOUND)
+        .body(e.getMessage());
+       }
     }
+
+       /**
+        * Toggle task completion status
+        * PATCH /api/tasks/{id}/toggle
+        */
+    @PatchMapping("/{id}/toggle")
+    public ResponseEntity<?> toggleTaskCompletion(@PathVariable Long id, Principal principal) {
+        try {
+            String username = principal.getName();
+            Task task = taskService.toggleTaskCompletion(id, username);
+            return ResponseEntity.ok(task);
+        } catch (RuntimeException e) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
+        }
+    }
+
+    /**
+     * Get completed tasks
+     * GET /api/tasks/completed
+    */
+    @GetMapping("/completed")
+    public ResponseEntity<List<Task>> getCompletedTasks(Principal principal) {
+        String username = principal.getName();
+        List<Task> tasks = taskService.getCompletedTasks(username);
+        return ResponseEntity.ok(tasks);
+    }
+
+    /**
+     * Get incomplete tasks
+     * GET /api/tasks/incomplete
+     */
+    @GetMapping("/incomplete")
+    public ResponseEntity<List<Task>> getIncompleteTasks(Principal principal) {
+        String username = principal.getName();
+        List<Task> tasks = taskService.getIncompleteTasks(username);
+        return ResponseEntity.ok(tasks);
+    }
+    
 }
