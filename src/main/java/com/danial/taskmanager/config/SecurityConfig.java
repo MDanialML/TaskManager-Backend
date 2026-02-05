@@ -11,8 +11,13 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.danial.taskmanager.security.JwtAuthenticationFilter;
+
+import java.util.Arrays;
 
 /**
  * Security Configuration
@@ -34,15 +39,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http
-        //1.Diable CSRF(Cross-Site Request Forgery)
+         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        //1.Disable CSRF(Cross-Site Request Forgery)
         //Not needed for stateless JWT authentication
         .csrf(csrf -> csrf.disable())
         //2. Configure authorization rules
         .authorizeHttpRequests(auth -> auth
             //public endpoints - anyone can access
             .requestMatchers(
-                "/api/auth/**", //All auth endpoints(login, register)
-                "/error"        //Error endpoint
+                "/api/register", "/api/login"
             ).permitAll()
             //ALl other endpoints require authentication
             .anyRequest().authenticated()
@@ -56,6 +61,39 @@ public class SecurityConfig {
         //Run it Before the UsernamePasswordAuthenticationFilter
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
+    }
+
+    /**
+     * CORS Configuration
+     * Allows frontend (React) to communicate with backend (Spring Boot)
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        
+        // Allow requests from your React frontend
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        
+        // Allow all HTTP methods (GET, POST, PUT, DELETE, PATCH, OPTIONS)
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        
+        // Allow all headers (including Authorization header with JWT token)
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        
+        // Allow credentials (cookies, authorization headers)
+        configuration.setAllowCredentials(true);
+        
+        // Expose Authorization header to frontend
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        
+        // Cache preflight response for 1 hour
+        configuration.setMaxAge(3600L);
+        
+        // Apply CORS configuration to all endpoints
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        
+        return source;
     }
 
     /**
