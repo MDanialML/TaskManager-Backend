@@ -25,7 +25,6 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api")
-@Value("${cors.allowed.origins}")
 public class AuthController {
     
     @Autowired
