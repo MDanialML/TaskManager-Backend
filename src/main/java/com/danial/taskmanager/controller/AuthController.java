@@ -25,7 +25,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+@Value("${cors.allowed.origins}")
 public class AuthController {
     
     @Autowired
@@ -33,7 +33,7 @@ public class AuthController {
 
     /**
      * Register a new user
-     * POST /api/auth/register
+     * POST /api/register
      * @param request - Registration details
      * @return AuthResponse with JWT token
      */
