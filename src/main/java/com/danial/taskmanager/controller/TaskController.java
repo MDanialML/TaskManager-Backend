@@ -17,7 +17,6 @@ import com.danial.taskmanager.service.TaskService;
 
 @RestController
 @RequestMapping("/api/tasks")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class TaskController {
     
     private final TaskService taskService;
