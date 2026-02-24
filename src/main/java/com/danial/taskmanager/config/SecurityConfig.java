@@ -1,7 +1,6 @@
 package com.danial.taskmanager.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;  // ADD THIS IMPORT
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,10 +27,6 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
     
-    // ADD THIS: Read allowed origins from properties file
-    @Value("${cors.allowed.origins}")
-    private String allowedOrigins;
-    
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http
@@ -51,17 +46,23 @@ public class SecurityConfig {
     }
 
     /**
-     * CORS Configuration - UPDATED FOR PRODUCTION
-     * Reads allowed origins from application.properties
+     * CORS Configuration
+     * Reads allowed origins directly from FRONTEND_URL environment variable
+     * Bypasses Railway's property file parsing during build phase
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Allow requests from environment variable (supports multiple origins)
-        // Example: "http://localhost:5173,https://your-app.vercel.app"
-        String[] origins = allowedOrigins.split(",");
-        configuration.setAllowedOrigins(Arrays.asList(origins));
+        // Read from environment variable directly
+        String originsEnv = System.getenv("FRONTEND_URL");
+        if (originsEnv != null && !originsEnv.isEmpty()) {
+            String[] origins = originsEnv.split(",");
+            configuration.setAllowedOrigins(Arrays.asList(origins));
+        } else {
+            // Fallback to localhost if not set
+            configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        }
         
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
